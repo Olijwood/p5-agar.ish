@@ -3,12 +3,12 @@ let blob;
 let blobs = new Map();
 let zoom = 1;
 
-// Define the boundary and quadtree globally
-let boundary = new Rectangle(0, 0, 1000, 1000);
+
+const boundary = new Rectangle(0, 0, 1000, 1000);
 let qtree = new Quadtree(boundary, 4);
 
 function setup() {
-    createCanvas(600, 600);
+    createCanvas(600, 600); // This should create and attach a canvas to the DOM
 
     socket = io.connect('http://localhost:3000');
 
@@ -23,12 +23,12 @@ function setup() {
     socket.emit('start', data);
 
     socket.on('heartbeat', (data) => {
-        blobs.clear();
-        data.forEach(blobData => blobs.set(blobData.id, blobData));
+        blobs.clear(); // Clear previous blobs
+        data.forEach(blob => blobs.set(blob.id, blob));
         
         // Clear and repopulate the quadtree
         qtree = new Quadtree(boundary, 4);
-        blobs.forEach((blob, id) => {
+        blobs.forEach(blob => {
             let point = { x: blob.x, y: blob.y, userData: blob };
             qtree.insert(point);
         });

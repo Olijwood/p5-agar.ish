@@ -1,0 +1,11 @@
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+canvas {
+  border: 1px solid black; /* Add border to make the canvas visible for testing */
+  display: block;
+  margin: 0 auto;
+}
+

@@ -62,6 +62,7 @@ class Quadtree {
                 return true;
             }
         }
+        return false;
     }
 
     query(range, found = []) {
@@ -84,3 +85,5 @@ class Quadtree {
         return found;
     }
 }
+
+module.exports = { Rectangle, Quadtree };
