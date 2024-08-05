@@ -1,3 +1,4 @@
+const { Rectangle, Quadtree } = require('./public/agario/quadtree');
 require('dotenv').config();
 const express = require('express');
 const socket = require('socket.io');
@@ -11,17 +12,30 @@ app.use(express.static('public'));
 
 const io = socket(server);
 
-let blobs = [];
+const blobs = new Map();
 
-function Blob(id, x, y, r) {
-    this.id = id;
-    this.x = x;
-    this.y = y;
-    this.r = r;
+class Blob {
+    constructor(id, x, y, r) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.r = r;
+    }
 }
 
+// Initialize Quadtree
+let boundary = new Rectangle(0, 0, 1000, 1000);  // Adjust according to your game's world size
+let qtree = new Quadtree(boundary, 4);
+
 const heartbeat = () => {
-    io.sockets.emit('heartbeat', blobs);
+    // Clear and repopulate the quadtree
+    qtree = new Quadtree(boundary, 4);
+    blobs.forEach(blob => {
+        let point = { x: blob.x, y: blob.y, userData: blob };
+        qtree.insert(point);
+    });
+
+    io.sockets.emit('heartbeat', Array.from(blobs.values()));
 };
 
 setInterval(heartbeat, 1000 / 30);
@@ -31,11 +45,11 @@ const newConnection = (socket) => {
 
     socket.on('start', (data) => {
         const blob = new Blob(socket.id, data.x, data.y, data.r);
-        blobs.push(blob);
+        blobs.set(socket.id, blob);
     });
 
     socket.on('update', (data) => {
-        const blob = blobs.find(b => b.id === socket.id);
+        const blob = blobs.get(socket.id);
         if (blob) {
             blob.x = data.x;
             blob.y = data.y;
@@ -44,7 +58,7 @@ const newConnection = (socket) => {
     });
 
     socket.on('disconnect', () => {
-        blobs = blobs.filter(b => b.id !== socket.id);
+        blobs.delete(socket.id);
         console.log(`Connection ${socket.id} disconnected`);
     });
 };
