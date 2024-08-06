@@ -1,5 +1,5 @@
-const { Blobby } = require('./game/Blob');
-const { Rectangle, Quadtree } = require('./game/Quadtree');
+import { Blobby } from './game/Blob.js';
+import { Rectangle, Quadtree } from './game/Quadtree.js';
 
 const blobs = new Map();
 const foodItems = [];
@@ -45,7 +45,6 @@ const heartbeat = (io) => {
     });
 };
 
-
 const setupSocketHandlers = (io) => {
     io.sockets.on('connection', (socket) => {
         console.log(`New connection: ${socket.id}`);
@@ -74,4 +73,4 @@ const setupSocketHandlers = (io) => {
     setInterval(() => heartbeat(io), 1000/30);
 };
 
-module.exports = { setupSocketHandlers };
+export { setupSocketHandlers };

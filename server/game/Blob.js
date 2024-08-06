@@ -5,6 +5,11 @@ class Blobby {
         this.y = y;
         this.r = r;
     }
+
+    eat(food) {
+        const newArea = Math.PI * this.r * this.r + Math.PI * food.r * food.r;
+        this.r = Math.sqrt(newArea / Math.PI);
+    }
 }
 
-module.exports = { Blobby };
+export { Blobby };

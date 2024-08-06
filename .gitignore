@@ -2,5 +2,6 @@ node_modules/
 
 package-lock.json
 jsconfig.json
+paths.txt
 
 libraries/

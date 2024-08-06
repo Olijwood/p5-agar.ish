@@ -86,4 +86,4 @@ class Quadtree {
     }
 }
 
-module.exports = { Rectangle, Quadtree };
+export { Rectangle, Quadtree };
