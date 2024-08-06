@@ -2,7 +2,7 @@ let socket;
 let blob;
 let blobs = new Map();
 let zoom = 1;
-
+var food = [];
 
 const boundary = new Rectangle(0, 0, 1000, 1000);
 let qtree = new Quadtree(boundary, 4);
@@ -12,9 +12,15 @@ function setup() {
 
     socket = io.connect('http://localhost:3000');
 
-    blob = new Blobby(floor(random(width)), floor(random(height)), floor(random(12, 36)));
+    blob = new Blobby(socket.id, floor(random(width)), floor(random(height)), floor(random(12, 36)));
     
+    for (var i = 0; i < 50; i++) {
+        var x = random(-width, width);
+        var y = random(-height, height);
+        food[i] = new Food(x, y, 16);
+    }
     const data = {
+        id: socket.id,
         x: blob.pos.x,
         y: blob.pos.y,
         r: blob.r,
@@ -44,6 +50,13 @@ function draw() {
     scale(zoom);
     translate(-blob.pos.x, -blob.pos.y);
 
+    for (var i = food.length - 1; i >= 0; i--) {
+        food[i].show();
+        if (blob.eats(food[i])) {
+          food.splice(i, 1);
+        }
+    }
+
     let range = new Rectangle(blob.pos.x, blob.pos.y, blob.r * 2, blob.r * 2);
     let points = qtree.query(range);
 
@@ -51,7 +64,10 @@ function draw() {
         let otherBlob = point.userData;
         if (otherBlob.id !== socket.id) {
             fill(0, 0, 255);
-            ellipse(otherBlob.x, otherBlob.y, otherBlob.r * 2, otherBlob.r * 2);
+            // ellipse(otherBlob.x, otherBlob.y, otherBlob.r * 2, otherBlob.r * 2);
+            let otherBlobby;
+            otherBlobby = new Blobby(otherBlob.id, otherBlob.x, otherBlob.y, otherBlob.r, false);
+            otherBlobby.show();
 
             fill(0);
             textAlign(CENTER);
@@ -65,6 +81,7 @@ function draw() {
     blob.constrain();
 
     const data = {
+        id: socket.id,
         x: blob.pos.x,
         y: blob.pos.y,
         r: blob.r,

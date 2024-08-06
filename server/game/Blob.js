@@ -1,4 +1,4 @@
-class Blob {
+class Blobby {
     constructor(id, x, y, r) {
         this.id = id;
         this.x = x;
@@ -7,4 +7,4 @@ class Blob {
     }
 }
 
-module.exports = { Blob };
+module.exports = { Blobby };

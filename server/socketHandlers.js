@@ -1,4 +1,4 @@
-const { Blob } = require('./game/Blob');
+const { Blobby } = require('./game/Blob');
 const { Rectangle, Quadtree } = require('./game/Quadtree');
 
 const blobs = new Map();
@@ -11,8 +11,9 @@ const heartbeat = (io) => {
     blobs.forEach(blob => {
         let point = { x: blob.x, y: blob.y, userData: blob };
         qtree.insert(point);
+        console.log(blob);
     });
-
+    
     io.sockets.emit('heartbeat', Array.from(blobs.values()));
 };
 
@@ -22,7 +23,7 @@ const setupSocketHandlers = (io) => {
         console.log(`New connection: ${socket.id}`);
 
         socket.on('start', (data) => {
-            const blob = new Blob(socket.id, data.x, data.y, data.r);
+            const blob = new Blobby(socket.id, data.x, data.y, data.r);
             blobs.set(socket.id, blob);
         });
 
@@ -42,7 +43,7 @@ const setupSocketHandlers = (io) => {
     });
 
     // Start the heartbeat loop
-    setInterval(() => heartbeat(io), 1000 / 30);
+    setInterval(() => heartbeat(io), 1000);
 };
 
 module.exports = { setupSocketHandlers };
