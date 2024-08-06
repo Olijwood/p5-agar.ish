@@ -3,17 +3,17 @@ let blob;
 let blobs = new Map();
 let zoom = 1;
 let food = [];
+let gameStarted = false; // Flag to check if the game has started
 
 const boundary = new Rectangle(0, 0, 1000, 1000);
 let qtree = new Quadtree(boundary, 4);
 
-function setup() {
-    createCanvas(600, 600);
+const startGame = () => {
+    startGameButton.hide(); // Hide the button when the game starts
+    buttonContainer.hide(); // Hide the container when the game starts
 
-    socket = io.connect('http://localhost:3000');
-
+    // Initialize blob and other game setup
     blob = new Blobby(socket.id, floor(random(width)), floor(random(height)), floor(random(12, 36)));
-
     const data = {
         id: socket.id,
         x: blob.pos.x,
@@ -24,16 +24,10 @@ function setup() {
     socket.emit('start', data);
 
     socket.on('heartbeat', (data) => {
-        blobs.clear(); // Clear previous blobs
-        data.blobs.forEach(blob => blobs.set(blob.id, blob)); // Update blobs with the latest sizes
-        food = data.foodItems; // Update food items
+        blobs.clear();
+        data.blobs.forEach(blob => blobs.set(blob.id, blob));
+        food = data.foodItems;
     
-        // Debugging output
-        // console.log('Received heartbeat:');
-        // console.log('Blobs:', Array.from(blobs.values()));
-        // console.log('Food:', food);
-    
-        // Ensure the local blob reflects the server's blob size
         if (blob) {
             const serverBlob = blobs.get(socket.id);
             if (serverBlob) {
@@ -43,19 +37,35 @@ function setup() {
             }
         }
     
-        // Rebuild the quadtree with updated blobs
         qtree = new Quadtree(boundary, 4);
         blobs.forEach(blob => {
             let point = { x: blob.x, y: blob.y, userData: blob };
             qtree.insert(point);
         });
     });
-    
-    
-    
+
+    gameStarted = true; // Set the flag to true once game setup is complete
+}
+
+function setup() {
+    createCanvas(600, 600);
+
+    // Connect to the server
+    socket = io.connect('http://localhost:3000');
+
+    startGameButton = makeStartButton();
+    startGameButton.mousePressed(startGame); // Attach event handler
 }
 
 function draw() {
+    if (!gameStarted) {
+        return; // If game hasn't started, skip drawing
+    }
+
+    if (!blob) {
+        return; // Skip drawing if blob is not yet initialized
+    }
+
     background(220);
 
     translate(width / 2, height / 2);
@@ -82,7 +92,7 @@ function draw() {
 
             fill(0);
             textAlign(CENTER);
-            textSize(otherBlob.r/4);
+            textSize(otherBlob.r / 4);
             text(otherBlob.id, otherBlob.x, otherBlob.y + otherBlob.r * 1.5);
         }
     });
